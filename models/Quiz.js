@@ -1,17 +1,11 @@
 const mongoose = require('mongoose');
 const quizSchema = new mongoose.Schema({
-    questions: {
-        type: [questionSchema],
-        required: true,
-    },
-    
-    Level:{
+    questions: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Question'
+    }],
+    type: {
         type: String,
-        required: true,
-    },
-    category: {
-        type: String,
-        required: true,
     },
     createdAt: {
         type: Date,

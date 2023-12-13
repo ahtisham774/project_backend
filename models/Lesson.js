@@ -5,24 +5,29 @@ const lessonSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    coverImage:{
-        type:String,
+    coverImage: {
+        type: String,
     },
     description: {
         type: String,
 
     },
-    materials:[
+    materials: [
         {
-            type: String,        
+            type: String,
         }
     ],
-    games:[{
+    conversation: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Question'
+        ref: 'Conversation'
+
+    },
+    games: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Quiz'
     }],
 
 })
 
 const Lesson = mongoose.model('Lesson', lessonSchema);
-module.exports=Lesson;
+module.exports = Lesson;

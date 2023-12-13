@@ -8,8 +8,16 @@ var db = require('./database/database')
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var homeworkRouter = require('./routes/homework');
+var classRouter = require('./routes/class');
 var levelRouter = require('./routes/level');
 var activitiesRouter = require('./routes/activities')
+var conversationRouter = require('./routes/conversation')
+const notesRoutes = require('./controllers/NoteController');
+
+
+
+
+
 
 var app = express();
 
@@ -31,7 +39,12 @@ app.use('/api/level', levelRouter);
 app.use('/api/subject', activitiesRouter);
 app.use('/api/activity', activitiesRouter);
 app.use('/api/lesson', activitiesRouter);
-
+app.use('/api/conversation', activitiesRouter);
+app.use('/api/quiz', activitiesRouter);
+app.use('/api/classes', classRouter);
+app.use('/api/tracking', classRouter);
+app.use('/api/conversation-item', conversationRouter);
+app.use('/api/notes/', notesRoutes);
 app.use('/api/homework', homeworkRouter);
 
 // catch 404 and forward to error handler

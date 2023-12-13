@@ -5,6 +5,9 @@ const UserController = require('../controllers/UserController');
 // Route for registering a new student
 router.post('/register',UserController.uploadImage, UserController.registerStudent);
 
+
+router.get('/students',UserController.getStudents);
+
 // Route for logging in a student
 router.post('/login', UserController.loginStudent);
 // Route to get all students

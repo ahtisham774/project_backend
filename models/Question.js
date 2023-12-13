@@ -13,9 +13,11 @@ const questionSchema = new mongoose.Schema({
   },
   userAnswer: {
     type: String,
+    default:""
   },
   isCorrect: {
     type: Boolean,
+    default: false,
   },
   createdAt: {
     type: Date,
