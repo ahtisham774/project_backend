@@ -12,6 +12,10 @@ const activitySchema = new mongoose.Schema({
         type: String,
 
     },
+    type: {
+        type: String,
+        required: true
+    },
     lessons:[
         {
             type: mongoose.Schema.Types.ObjectId,

@@ -1,9 +1,9 @@
 
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const path = require('path');
 const Student = require('../models/Student');
+const Teacher = require("../models/Teacher")
 
 
 // Set up multer storage for image upload
@@ -22,12 +22,12 @@ const upload = multer({ storage: storage });
 
 
 
-exports.getStudents = async (req,res) =>{
-    try{
+exports.getStudents = async (req, res) => {
+    try {
         const students = await Student.find().select('firstName lastName profileImage');
         res.status(200).json(students);
     }
-    catch(error){
+    catch (error) {
         console.log(error)
         res.status(400).json({ message: 'Invalid credentials' });
     }
@@ -46,11 +46,14 @@ exports.registerStudent = async (req, res) => {
         if (existingStudent) {
             return res.status(400).json({ message: 'Student already exists' });
         }
-
+        const existingTeacher = await Teacher.findOne({ email: req.body.email });
+        if (existingTeacher) {
+            return res.status(400).json({ message: 'This email is registered as Teacher' });
+        }
         // Hash password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(req.body.password, salt);
-        
+
         // Create new student object
         const newStudent = new Student({
             rollNo: req.body.rollNo,
@@ -58,17 +61,17 @@ exports.registerStudent = async (req, res) => {
             lastName: req.body.lastName,
             email: req.body.email,
             password: hashedPassword,
-            profileImage: req.file ? req.file?.filename : ""
+            profileImage: req.file ? (req.file.filename ? req.file.filename : "") : ""
         });
 
         // Save student to database
         const savedStudent = await newStudent.save();
 
         // Generate JWT token
- 
-        const token = jwt.sign({ id: savedStudent._id }, process.env.JWT_SECRET);
 
-        res.status(200).json({ token });
+
+
+        res.status(200).json({ email: savedStudent.email });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
@@ -78,22 +81,24 @@ exports.registerStudent = async (req, res) => {
 // Login a student
 exports.loginStudent = async (req, res) => {
     try {
-        // Check if student exists
-        const student = await Student.findOne({ email: req.body.email });
-        if (!student) {
+
+        let user;
+        if (req.body.userType === "teacher") {
+            user = await Teacher.findOne({ email: req.body.email });
+        }
+        else {
+            user = await Student.findOne({ email: req.body.email });
+        }
+        if (!user) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
-
-        // Check if password is correct
-        const validPassword = await bcrypt.compare(req.body.password, student.password);
+        // Validate the password
+        const validPassword = await bcrypt.compare(req.body.password, user.password);
         if (!validPassword) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        // Generate JWT token
-        const token = jwt.sign({ id: student._id }, process.env.JWT_SECRET);
-
-        res.status(200).json({ "token":token,"userType":req.body.userType });
+        res.status(200).json({ "email": req.body.email, "userType": req.body.userType });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
@@ -116,7 +121,7 @@ exports.getStudentDetails = async (req, res) => {
 exports.getStudentById = async (req, res) => {
     try {
         // Find student by id
-        const student = await Student.findOne({email:req.params.email}).select('-password -dateCreated -dateUpdated');
+        const student = await Student.findOne({ email: req.params.email }).select('-password -dateCreated -dateUpdated');
         res.status(200).json(student);
     }
     catch (error) {
@@ -150,7 +155,7 @@ exports.updateStudentDetails = async (req, res) => {
 exports.deleteStudent = async (req, res) => {
     try {
         // Find and delete the student
-        await Student.findOneAndDelete({email:req.params.email});
+        await Student.findOneAndDelete({ email: req.params.email });
         res.status(200).json({ message: 'Student deleted' });
     }
     catch (error) {
@@ -159,24 +164,65 @@ exports.deleteStudent = async (req, res) => {
     }
 }
 // create a function that takes token and return the student
-exports.getCurrentUser = async (req,res) =>{
-    
-    const token = req.query.token
-   
-    try{
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-       
-        const student = await Student.findById(decoded.id).select('-password -dateCreated -dateUpdated');
-        
-        res.status(200).json(student);
+exports.getCurrentUser = async (req, res) => {
+    const email = req.query.email;
+
+    try {
+        if (!email) {
+            return res.status(401).json({ message: 'email is missing' });
+        }
+        let teacher = await Teacher.findOne({ email: email }).select(
+            '-password -dateCreated -dateUpdated -__v'
+        );
+        let student = await Student.findOne({ email: email }).select(
+            '-password -dateCreated -dateUpdated -__v'
+        );
+        if (teacher) {
+            return res.status(200).json({ ...teacher._doc, userType: 'teacher'} );
+        }
+        if (student) {
+            return res.status(200).json({ ...student._doc, userType: 'student' });
+        }
+        return res.status(401).json({ message: 'Invalid email' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
     }
-    catch(error){
+};
+
+
+
+exports.registerTeacher = async (req, res) => {
+    try {
+        const existingTeacher = await Teacher.findOne({ email: req.body.email });
+        console.log("existingTeacher: ", existingTeacher)
+        if (existingTeacher) {
+            return res.status(400).json({ message: 'Teacher already exists' });
+        }
+        let student = await Student.findOne({ email: req.body.email });
+        console.log("student: ", student)
+        if (student) {
+            return res.status(400).json({ message: 'You are already registered as Student' });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(req.body.password, salt);
+        const newTeacher = new Teacher({
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            email: req.body.email,
+            password: hashedPassword,
+            profileImage: req.file ? (req.file.filename ? req.file.filename : "") : ""
+        });
+        const savedTeacher = await newTeacher.save();
+        res.status(200).json({ email: savedTeacher.email });
+    }
+    catch (error) {
         console.log(error)
         res.status(400).json({ message: 'Invalid credentials' });
     }
-
-
 }
+
 
 // Handle image upload
 exports.uploadImage = upload.single('profileImage');

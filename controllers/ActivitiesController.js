@@ -43,7 +43,7 @@ const getAllActivities = async (req, res, next) => {
         let subject = await Subject.findOne({ _id: req.params.id }).select("activities")
             .populate({
                 path: 'activities',
-                select: "title coverImage description", // Exclude the 'activities' field
+                select: "title coverImage type description", // Exclude the 'activities' field
             });
         if (!subject) {
             return res.status(404).json({ message: 'Subject not found' });
@@ -65,14 +65,14 @@ const getActivitiesContentById = async (req, res, next) => {
         let activity;
         if (required === 'lessons') {
             //get get lesson from activity and populate it and select title description and coverImage from lesson
-            activity = await Activity.findById(id).select("lessons")
+            activity = await Activity.findById(id).select("type lessons")
                 .populate({
                     path: 'lessons',
-                    select: "title description coverImage", // Exclude the 'activities' field
+                    select: "title description  coverImage", // Exclude the 'activities' field
                 });
         }
         else if (required === 'homeworks') {
-            activity = await Activity.findById(id).select("title homeworks")
+            activity = await Activity.findById(id).select("title type homeworks")
         }
 
         if (!activity) {
@@ -95,10 +95,10 @@ const getMaterialByLesson = async (req, res, next) => {
         let lesson;
         if (required === 'materials') {
             //get get lesson from activity and populate it and select title description and coverImage from lesson
-            lesson = await Lesson.findById(id).select("title materials")
+            lesson = await Lesson.findById(id).select("title type materials")
         }
         else if (required === 'game') {
-            lesson = await Lesson.findById(id).select("title games").populate({
+            lesson = await Lesson.findById(id).select("title type games").populate({
                 path: 'games',
                 populate: {
                     path: 'questions',
@@ -108,7 +108,7 @@ const getMaterialByLesson = async (req, res, next) => {
         }
 
         else if (required === 'conversation') {
-            lesson = await Lesson.findById(id).select("conversation").populate({
+            lesson = await Lesson.findById(id).select("type conversation").populate({
                 path: "conversation",
                 populate: {
                     path: "conversations.person1 conversations.person2",
@@ -230,7 +230,7 @@ const updateConversationAudio = async (req, res) => {
 const createActivities = async (req, res, next) => {
     try {
         const id = req.params.id;
-        const { title, description } = req.body;
+        const { title, description,type } = req.body;
         //get coverImage
         const coverImage = req.file.filename;
 
@@ -247,6 +247,7 @@ const createActivities = async (req, res, next) => {
         const activities = new Activity({
             title,
             description,
+            type,
             coverImage,
         });
         // Save the subject to the database
@@ -269,7 +270,7 @@ const createActivities = async (req, res, next) => {
 const addLesson = async (req, res, next) => {
     try {
         const id = req.params.id;
-        const { title, description } = req.body
+        const { title, description,type } = req.body
         //get coverImage
         const coverImage = req.file.filename;
 
@@ -284,6 +285,7 @@ const addLesson = async (req, res, next) => {
         const lesson = new Lesson({
             title,
             description,
+            type,
             coverImage
         })
         //save lesson
@@ -391,26 +393,37 @@ const createConversation = async (req, res) => {
 const removeMaterial = async (req, res, next) => {
     try {
         const id = req.params.id;
-        const { filename } = req.body
+        const { filename } = req.body;
 
-        // Find the subject by ID
+        // Find the lesson by ID
         const lesson = await Lesson.findById(id);
         if (!lesson) {
             return res.status(404).json({ message: 'Lesson not found' });
         }
-        lesson.materials.pull(filename)
-        //also remove from /public/images/activities/${filename}
-        const directory = path.join(__dirname, '..', 'public', 'images', 'activities', filename)
-        fs.unlinkSync(directory);
-        await lesson.save();
-        return res.status(200).json({ message: "Successfully removed!!!" })
-        next();
-    }
-    catch (error) {
+
+        // Remove the filename from the materials array
+        lesson.materials.pull(filename);
+
+        // Construct the file path
+        const directory = path.join(__dirname, '..', 'public', 'images', 'activities', filename);
+
+        // Check if the file exists before attempting to remove it
+        if (fs.existsSync(directory)) {
+            // Remove the file
+            fs.unlinkSync(directory);
+            await lesson.save();
+            return res.status(200).json({ message: 'Successfully removed!!!' });
+        } else {
+            // File does not exist
+            await lesson.save();
+            return res.status(200).json({ message: 'Successfully removed!!!' });
+        }
+    } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Server error' });
     }
 };
+
 const deleteQuestion = async (req, res) => {
     try {
         const quizIdToDelete = req.params.quizId;

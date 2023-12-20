@@ -12,6 +12,11 @@ const lessonSchema = new mongoose.Schema({
         type: String,
 
     },
+    type: {
+        type: String,
+        required: true
+    },
+
     materials: [
         {
             type: String,
