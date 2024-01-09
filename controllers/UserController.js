@@ -34,6 +34,40 @@ exports.getStudents = async (req, res) => {
 }
 
 
+
+// assign level to student
+exports.assignLevel = async (req, res) => {
+    try {
+        const levelID = req.body.levelID;
+        const students = JSON.parse(req.body.students);
+
+        console.log(levelID, students);
+
+        await Student.updateMany(
+            { _id: { $in: students }, levels: { $ne: levelID } },
+            { $addToSet: { levels: levelID } }
+        );
+        
+        res.status(200).json({ message: 'Level assigned' });
+    } catch (error) {
+        console.log(error);
+        res.status(400).json({ message: 'Invalid credentials' });
+    }
+};
+
+//get students levels
+exports.getStudentLevels = async (req, res) => {
+    try {
+        const student = await Student.findById(req.params.id).select('levels').populate("levels");
+        res.status(200).json(student);
+    }
+    catch (error) {
+        console.log(error)
+        res.status(400).json({ message: 'Invalid credentials' });
+    }
+}
+
+
 // Register a new student
 exports.registerStudent = async (req, res) => {
     try {

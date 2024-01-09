@@ -7,6 +7,7 @@ const levelController = require('../controllers/LevelController');
 
 // Define the endpoint for level
 router.get('/all', levelController.getAllLevel);
+router.put('/:id/update-name', levelController.updateLevelName);
 router.post('/create', levelController.createLevel);
 router.get('/:id/subject/all', levelController.getLevelById);
 router.post('/:id/subject/create', levelController.uploadImage,levelController.updateLevelById);

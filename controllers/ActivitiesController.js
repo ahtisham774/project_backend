@@ -129,20 +129,18 @@ const getMaterialByLesson = async (req, res, next) => {
     }
 }
 
-
 const deleteConversation = async (req, res) => {
     try {
         const conversationId = req.params.id;
         const { conversation_id } = req.body;
-
         // Use the $pull operator to remove the conversation by ID from the array
         const result = await Conversation.updateOne(
             { _id: conversationId },
             { $pull: { conversations: { _id: conversation_id } } }
         );
-
+        console.log(result)
         // Check if any modifications were made
-        if (result.nModified === 0) {
+        if (result.modifiedCount === 0) {
             return res.status(404).json({ message: 'Conversation not found or not modified' });
         }
 
@@ -151,9 +149,7 @@ const deleteConversation = async (req, res) => {
         console.error(error);
         return res.status(500).json({ message: 'Server error' });
     }
-
 }
-
 
 const createLessonGame = async (req, res) => {
     try {
@@ -230,7 +226,7 @@ const updateConversationAudio = async (req, res) => {
 const createActivities = async (req, res, next) => {
     try {
         const id = req.params.id;
-        const { title, description,type } = req.body;
+        const { title, description, type } = req.body;
         //get coverImage
         const coverImage = req.file.filename;
 
@@ -270,7 +266,7 @@ const createActivities = async (req, res, next) => {
 const addLesson = async (req, res, next) => {
     try {
         const id = req.params.id;
-        const { title, description,type } = req.body
+        const { title, description, type } = req.body
         //get coverImage
         const coverImage = req.file.filename;
 
@@ -369,7 +365,7 @@ const createConversation = async (req, res) => {
                 person2: person2Item._id
             });
         }
-        console.log(conversationIds)
+
 
         const newConversation = new Conversation({
             audio,
@@ -388,6 +384,48 @@ const createConversation = async (req, res) => {
     }
 };
 
+//create function to add conversation in give conversation
+const createConversationItem = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const conversations = JSON.parse(req.body.conversation);
+        const conversation = await Conversation.findById(id);
+
+        if (!conversation) {
+            return res.status(404).json({ message: 'Conversation not found' });
+        }
+        let conversationIds;
+
+
+        const person1Item = new ConversationItem({
+            name: conversations[0].person1.name,
+            text: conversations[0].person1.text,
+            translation: conversations[0].person1.translation,
+        });
+
+        const person2Item = new ConversationItem({
+            name: conversations[1].person2.name,
+            text: conversations[1].person2.text,
+            translation: conversations[1].person2.translation,
+        });
+
+        await person1Item.save();
+        await person2Item.save();
+        conversationIds = {
+            person1: person1Item._id,
+            person2: person2Item._id
+        };
+
+        conversation.conversations.push(conversationIds);
+        await conversation.save();
+        return res.status(200).json({ message: "Successfully added!!!" })
+
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+}
 
 //remove material from lesson
 const removeMaterial = async (req, res, next) => {
@@ -500,6 +538,94 @@ const editGame = async (req, res) => {
     }
 }
 
+//update Activity
+const updateActivity = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        const { title, description } = req.body;
+        //get coverImage
+        const coverImage = req.file?.filename;
+
+        // Find the subject by ID
+        const activity = await Activity.findById(id);
+        if (!activity) {
+            return res.status(404).json({ message: 'Activity not found' });
+        }
+        activity.title = title;
+        activity.description = description;
+        if (coverImage) {
+            activity.coverImage = coverImage;
+        }
+        await activity.save();
+        return res.status(200).json({ message: "Successfully updated!!!" })
+        next();
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+};
+
+
+const deleteActivity = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        // Find the subject by ID
+        const activity = await Activity.findByIdAndDelete(id);
+        if (!activity) {
+            return res.status(404).json({ message: 'Activity not found' });
+        }
+        return res.status(200).json({ message: "Successfully deleted!!!" })
+        next();
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+};
+
+const updateLesson = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        const { title, description } = req.body;
+        //get coverImage
+        const coverImage = req.file?.filename;
+
+        // Find the subject by ID
+        const lesson = await Lesson.findById(id);
+        if (!lesson) {
+            return res.status(404).json({ message: 'Lesson not found' });
+        }
+        lesson.title = title;
+        lesson.description = description;
+        if (coverImage) {
+            lesson.coverImage = coverImage;
+        }
+        await lesson.save();
+        return res.status(200).json({ message: "Successfully updated!!!" })
+        next();
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+};
+
+
+const deleteLesson = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        // Find the subject by ID
+        const lesson = await Lesson.findByIdAndDelete(id);
+        if (!lesson) {
+            return res.status(404).json({ message: 'Lesson not found' });
+        }
+        return res.status(200).json({ message: "Successfully deleted!!!" })
+        next();
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+};
+
+
 module.exports = { editGame };
 
 
@@ -514,6 +640,7 @@ module.exports = {
     createConversation,
     getActivitiesContentById,
     deleteConversation,
+    createConversationItem,
     createLessonGame,
     editGame,
     deleteQuestion,
@@ -521,6 +648,10 @@ module.exports = {
     addLesson,
     removeMaterial,
     getMaterialByLesson,
+    updateActivity,
+    deleteActivity,
+    updateLesson,
+    deleteLesson,
     uploadImage,
     audio
 

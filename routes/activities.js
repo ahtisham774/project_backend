@@ -4,11 +4,13 @@ const router = express.Router();
 
 // Import the activitiesController
 const activitiesController = require('../controllers/ActivitiesController');
+const levelController  = require("../controllers/LevelController")
 
 // Define the endpoint for level
 router.get('/:id/activity/all', activitiesController.getAllActivities);
 router.post('/:id/activity/create',activitiesController.uploadImage, activitiesController.createActivities);
 router.post('/:id/conversation/create',activitiesController.audio, activitiesController.createConversation);
+router.post('/:id/add', activitiesController.createConversationItem);
 router.post('/:id/lesson/all', activitiesController.getActivitiesContentById);
 router.put('/:id', activitiesController.audio,activitiesController.updateConversationAudio);
 router.post('/:id/material/all', activitiesController.getMaterialByLesson);
@@ -18,7 +20,13 @@ router.post('/:id/material/add', activitiesController.uploadImage, activitiesCon
 router.post('/:id/material/remove',  activitiesController.removeMaterial);
 // router.get('/:id/subject/all', activitiesController.getLevelById);
 // router.post('/:id/subject/create', activitiesController.uploadImage,activitiesController.updateLevelById);
-router.delete('/:id', activitiesController.deleteConversation);
+router.put('/:id/remove', activitiesController.deleteConversation);
+router.put('/:id/update-subject',levelController.uploadImage, levelController.updateSubject);
+router.put('/:id/update-activity',activitiesController.uploadImage, activitiesController.updateActivity);
+router.put('/:id/update-lesson',activitiesController.uploadImage, activitiesController.updateLesson);
+router.delete('/:id/remove-subject', levelController.deleteSubject);
+router.delete('/:id/remove-activity', activitiesController.deleteActivity);
+router.delete('/:id/remove-lesson', activitiesController.deleteLesson);
 router.delete('/:quizId/question/:questionId', activitiesController.deleteQuestion);
 router.put('/:quizId/edit', activitiesController.editGame);
 

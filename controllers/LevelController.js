@@ -120,13 +120,82 @@ const deleteLevelById = async (req, res, next) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+
+//update subject
+const updateSubject = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        const { title, description } = req.body;
+        //get coverImage
+        const coverImage = req.file?.filename;
+
+        // Find the subject by ID
+        const subject = await Subject.findById(id);
+        if (!subject) {
+            return res.status(404).json({ message: 'Subject not found' });
+        }
+        subject.title = title;
+        subject.description = description;
+        if (coverImage) {
+
+            subject.coverImage = coverImage;
+        }
+        await subject.save();
+        return res.status(200).json({ message: "Successfully updated!!!" })
+        next();
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+};
+
+const updateLevelName = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        const { level } = req.body;
+        // Find the level by ID
+        const newLevel = await Level.findById(id);
+        if (!newLevel) {
+            return res.status(404).json({ message: 'Level not found' });
+        }
+        newLevel.level = level;
+        await newLevel.save();
+        return res.status(200).json({ message: "Successfully updated!!!" })
+        next();
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+};
+
+const deleteSubject = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        // Find the subject by ID
+        const subject = await Subject.findByIdAndDelete(id);
+        if (!subject) {
+            return res.status(404).json({ message: 'Subject not found' });
+        }
+        
+        return res.status(200).json({ message: "Successfully deleted!!!" })
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+};
+
+
 uploadImage = upload.single('coverImage');
 
 module.exports = {
     getAllLevel,
+    updateLevelName,
     getLevelById,
     createLevel,
     updateLevelById,
+    updateSubject,
+    deleteSubject,
     deleteLevelById,
     uploadImage
 
