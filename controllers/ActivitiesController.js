@@ -198,6 +198,28 @@ const createLessonGame = async (req, res) => {
 
 }
 
+const deleteLessonGame = async (req, res) => {
+    try {
+        const lessonId = req.params.id;
+        const gameId = req.query.gameId;
+        console.log(lessonId)
+        console.log(gameId)
+       const updateLesson = await Lesson.updateOne({
+            _id: lessonId
+        }, {
+            $pull: {
+                games: gameId
+            }
+        });
+        console.log(updateLesson)
+        return res.status(200).json({ message: "Successfully deleted!!!" })
+    } catch (err) {
+        console.error('Error deleting game:', err);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+
+}
+
 const updateConversationAudio = async (req, res) => {
     try {
         const id = req.params.id;
@@ -643,6 +665,7 @@ module.exports = {
     createConversationItem,
     createLessonGame,
     editGame,
+    deleteLessonGame,
     deleteQuestion,
     addMaterial,
     addLesson,
@@ -652,6 +675,7 @@ module.exports = {
     deleteActivity,
     updateLesson,
     deleteLesson,
+    
     uploadImage,
     audio
 

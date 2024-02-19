@@ -1,9 +1,12 @@
 
 const Tracking = require("../models/Tracking")
 const Class = require("../models/Class")
-
+const ClassManagement = require("../models/ClassManagement")
+const Student = require("../models/Student")
 
 const createClass = async (req, res) => {
+    const year = req.body.year;
+    const studentId = req.params.id;
     const months = [
         "January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"
@@ -17,16 +20,117 @@ const createClass = async (req, res) => {
         tracking: []
     }));
 
+    const classIds = [];
     try {
         // Use insertMany to insert multiple classes
-        await Class.insertMany(classesToInsert);
-        res.status(201).json({ message: "Created Successfully!" });
+        const insertedClasses = await Class.insertMany(classesToInsert);
+        insertedClasses.forEach((insertedClass) => {
+            classIds.push(insertedClass._id);
+        });
+
+        // create ClassManagement and add data to it
+        const yearlyClass = {
+            year: year,
+            monthlyClasses: classIds
+        };
+        let classManagement;
+        classManagement = await Student.findOne({ _id: studentId });
+        if (!classManagement) {
+            res.status(404).json({ message: "Student not found" });
+        }
+        if (classManagement) {
+            classManagement.classes.push(yearlyClass);
+            await classManagement.save();
+            return res.status(201).json({ message: "Created Successfully!" });
+        }
+
     } catch (err) {
         res.status(400).json({ message: err.message });
     }
-}
+};
 
 
+const getYears = async (req, res) => {
+    try {
+        const studentId = req.params.id;
+        const years = await Student.findOne({ _id: studentId }, { "classes.year": 1, "classes._id": 1 });
+        if (!studentId) {
+            return res.status(404).json({ message: "Cannot find student" });
+        }
+        // if no years found
+        if (years == null || years?.length === 0) {
+            return res.status(404).json({ message: "No years found" });
+        }
+
+        res.json(years);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+const getMonthlyClassesByYear = async (req, res) => {
+    try {
+        const studentId = req.params.id;
+        const year = req.query.year;
+
+        // Find the ClassManagement document matching the student ID
+        const classManagement = await Student.findOne({ _id: studentId });
+
+        if (!classManagement) {
+            return res.status(404).json({ message: "Class management not found" });
+        }
+
+        // Find the classes for the requested year
+        const requestedYearClasses = classManagement.classes.find(cls => cls.year === year);
+
+        if (!requestedYearClasses) {
+            return res.status(404).json({ message: "Classes for the requested year not found" });
+        }
+
+        // Get the monthly class IDs for the requested year
+        const monthlyClassIds = requestedYearClasses.monthlyClasses;
+
+        // Retrieve the details of each monthly class
+        const monthlyClasses = await Class.find({ _id: { $in: monthlyClassIds } })
+            .select('name _id');
+
+        res.json(monthlyClasses);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+const getMonthlyClassByYearAndMonth = async (req, res) => {
+    try {
+        const studentId = req.params.id;
+        const year = req.query.year;
+        const month = req.query.month;
+
+        // Find the ClassManagement document matching the student ID
+        const classManagement = await Student.findOne({ _id: studentId });
+
+        if (!classManagement) {
+            return res.status(404).json({ message: "Class management not found" });
+        }
+
+        // Find the classes for the requested year
+        const requestedYearClasses = classManagement.classes.find(cls => cls.year === year);
+
+        if (!requestedYearClasses) {
+            return res.status(404).json({ message: "Classes for the requested year not found" });
+        }
+
+        // Get the monthly class IDs for the requested year
+        const monthlyClassIds = requestedYearClasses.monthlyClasses;
+
+        // Retrieve the details of each monthly class
+        const monthlyClasses = await (await Class.find({ _id: { $in: monthlyClassIds } })).find(cls => cls.name === month);
+
+        res.json(monthlyClasses);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
 //get classes with name only
 const getClasses = async (req, res) => {
     try {
@@ -88,15 +192,15 @@ const createTracking = async (req, res) => {
         const newTracking = await tracking.save();
         classItem.tracking.push(newTracking._id);
         await classItem.save();
-        res.status(201).json({message:"Created!"});
+        res.status(201).json({ message: "Created!" });
     } catch (err) {
         res.status(400).json({ message: err.message });
     }
 }
 
 
-const createTrackingBulk = async (req,res)=>{
-    try{
+const createTrackingBulk = async (req, res) => {
+    try {
         const id = req.params.id
         const count = req.body.count
         const classItem = await Class.findById(id);
@@ -104,18 +208,18 @@ const createTrackingBulk = async (req,res)=>{
             return res.status(404).json({ message: "Cannot find class" });
         }
         let tracking = []
-        for(let i = 0; i < count; i++){
+        for (let i = 0; i < count; i++) {
             tracking.push({
                 name: "Class Done"
             })
         }
         const newTracking = await Tracking.insertMany(tracking);
-        newTracking.forEach((track)=>{
+        newTracking.forEach((track) => {
             classItem.tracking.push(track._id);
         })
         await classItem.save();
-        res.status(201).json({message:"Created!"});
-    }catch(err){
+        res.status(201).json({ message: "Created!" });
+    } catch (err) {
         res.status(400).json({ message: err.message });
     }
 
@@ -145,23 +249,23 @@ const updateClassInfo = async (req, res) => {
     }
 };
 
-const updateTracking = async (req,res)=>{
-    try{
+const updateTracking = async (req, res) => {
+    try {
         const id = req.params.id;
-        const {isDone, dueDate} = req.body;
+        const { isDone, dueDate } = req.body;
         const updatedTracking = await Tracking.findById(id);
-        if(!updatedTracking){
-            return res.status(404).json({message:"Tracking not found"});
+        if (!updatedTracking) {
+            return res.status(404).json({ message: "Tracking not found" });
         }
-        if(isDone !== null){
+        if (isDone !== null) {
             updatedTracking.isDone = isDone;
         }
-        if(dueDate !== null){
+        if (dueDate !== null) {
             updatedTracking.dueDate = dueDate;
         }
         await updatedTracking.save();
-        res.json({message:"Updated Successfully!"});
-    }catch(err){
+        res.json({ message: "Updated Successfully!" });
+    } catch (err) {
         res.status(500).json({ message: err.message });
     }
 
@@ -174,5 +278,9 @@ module.exports = {
     getClasses,
     createTrackingBulk,
     updateTracking,
-    getClassItems
+    getYears,
+    getClassItems,
+    getMonthlyClassesByYear,
+    getMonthlyClassByYearAndMonth,
+
 }

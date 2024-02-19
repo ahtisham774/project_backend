@@ -7,7 +7,10 @@ const classController = require('../controllers/ClassController');
 
 // Define the endpoint for class
 
-router.post('/new', classController.createClass);
+router.post('/new/:id', classController.createClass);
+router.get('/get-years/:id', classController.getYears);
+router.get('/student/:id/monthlyClasses', classController.getMonthlyClassesByYear);
+router.get('/student/:id/monthlyClass', classController.getMonthlyClassByYearAndMonth);
 router.post('/:id/item', classController.getClassItems);
 router.get('/all', classController.getClasses);
 router.put('/:id/update', classController.updateClassInfo);

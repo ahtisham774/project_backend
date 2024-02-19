@@ -14,7 +14,9 @@ router.post('/login', UserController.loginStudent);
 // Route to get all students
 // Route to Current User
 router.get('/current', UserController.getCurrentUser);
+router.get('/students-status', UserController.getStudentsStatus);
 router.put('/assign-level', UserController.assignLevel);
+router.put('/status/:id', UserController.updateStatus);
 router.post('/:id/get-levels', UserController.getStudentLevels);
 router.get('/all', UserController.getStudentDetails);
 // Route to get student by id

@@ -24,15 +24,26 @@ const studentSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    status: {
+        type: String,
+        default: "active"
+    }
+    ,
     profileImage: {
         type: String
     },
-    classes: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Class'
+    classes: [{
+        year: {
+            type: String,
         }
-    ],
+        ,
+        monthlyClasses: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Class"
+            }
+        ]
+    }],
     levels: [
         {
             type: mongoose.Schema.Types.ObjectId,

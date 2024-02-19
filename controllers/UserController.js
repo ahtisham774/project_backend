@@ -33,7 +33,31 @@ exports.getStudents = async (req, res) => {
     }
 }
 
+exports.updateStatus = async (req, res) => {
+    try {
+        const student = await Student.findById(req.params.id);
+        if (!student) return res.status(404).json({ message: 'Student not found' });
+        student.status = req.body.status;
+        await student.save();
+        res.status(200).json(student);
+    }
+    catch (error) {
+        console.log(error)
+        res.status(400).json({ message: 'Invalid credentials' });
+    }
 
+}
+
+exports.getStudentsStatus = async (req, res) => {
+    try {
+        const students = await Student.aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }, ]);
+        res.status(200).json(students);
+    }
+    catch (error) {
+        console.log(error)
+        res.status(400).json({ message: 'Invalid credentials' });
+    }
+}
 
 // assign level to student
 exports.assignLevel = async (req, res) => {
@@ -47,7 +71,7 @@ exports.assignLevel = async (req, res) => {
             { _id: { $in: students }, levels: { $ne: levelID } },
             { $addToSet: { levels: levelID } }
         );
-        
+
         res.status(200).json({ message: 'Level assigned' });
     } catch (error) {
         console.log(error);
@@ -121,7 +145,7 @@ exports.loginStudent = async (req, res) => {
             user = await Teacher.findOne({ email: req.body.email });
         }
         else {
-            user = await Student.findOne({ email: req.body.email });
+            user = await Student.findOne({ email: req.body.email, status: "active" });
         }
         if (!user) {
             return res.status(400).json({ message: 'Invalid credentials' });
@@ -212,7 +236,7 @@ exports.getCurrentUser = async (req, res) => {
             '-password -dateCreated -dateUpdated -__v'
         );
         if (teacher) {
-            return res.status(200).json({ ...teacher._doc, userType: 'teacher'} );
+            return res.status(200).json({ ...teacher._doc, userType: 'teacher' });
         }
         if (student) {
             return res.status(200).json({ ...student._doc, userType: 'student' });

@@ -12,6 +12,12 @@ const classSchema = new mongoose.Schema({
     goal: {
         type: String,
     },
+    homeworks: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Homework'
+        }
+    ],
     tracking: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Tracking'
