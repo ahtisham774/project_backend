@@ -126,22 +126,23 @@ const deleteLevelById = async (req, res, next) => {
 const updateSubject = async (req, res, next) => {
     try {
         const id = req.params.id;
-        const { title, description } = req.body;
+        const { subject, description } = req.body;
         //get coverImage
         const coverImage = req.file?.filename;
 
         // Find the subject by ID
-        const subject = await Subject.findById(id);
+        const subjectObj = await Subject.findById(id);
         if (!subject) {
             return res.status(404).json({ message: 'Subject not found' });
         }
-        subject.title = title;
-        subject.description = description;
+        console.log(subject,description)
+        subjectObj.subject = subject;
+        subjectObj.description = description;
         if (coverImage) {
 
-            subject.coverImage = coverImage;
+            subjectObj.coverImage = coverImage;
         }
-        await subject.save();
+        await subjectObj.save();
         return res.status(200).json({ message: "Successfully updated!!!" })
         next();
     } catch (error) {

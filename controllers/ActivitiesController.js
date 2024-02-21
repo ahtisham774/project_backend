@@ -156,6 +156,7 @@ const createLessonGame = async (req, res) => {
 
         const id = req.params.id
         // Extract lesson data from the request body
+        const name = req.body.name;
         const questions = req.body.questions;
         const type = req.body.gameType
 
@@ -180,6 +181,7 @@ const createLessonGame = async (req, res) => {
 
 
         const quiz = new Quiz({
+            name,
             questions: questionIds,
             type
 
@@ -406,6 +408,34 @@ const createConversation = async (req, res) => {
     }
 };
 
+const updateConversation = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const { title } = req.body;
+
+       
+
+        const conversation = await Conversation.findById(id);
+        if (!conversation) {
+            return res.status(404).json({ message: 'Conversation not found' });
+        }
+        if(req.file){
+            conversation.audio = req.file.filename;
+        }
+        if(title){
+            conversation.title = title;
+        }
+       
+        await conversation.save();
+
+        return res.status(200).json({ message: 'Successfully updated!!!' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+
+}
+
 //create function to add conversation in give conversation
 const createConversationItem = async (req, res) => {
     try {
@@ -513,12 +543,15 @@ const deleteQuestion = async (req, res) => {
 const editGame = async (req, res) => {
     try {
         const quizId = req.params.quizId;
-        const updatedQuestions = req.body;
+        const updatedQuestions = req.body.questions;
+        const name = req.body.name;
         const quizToEdit = await Quiz.findById(quizId)
         if (!quizToEdit) {
             return res.status(404).json({ message: 'Quiz not found' });
         }
-
+        if(name){
+            quizToEdit.name = name;
+        }
         // Get existing question IDs from the quiz
         const existingQuestionIds = quizToEdit.questions;
 
@@ -666,6 +699,7 @@ module.exports = {
     createLessonGame,
     editGame,
     deleteLessonGame,
+    updateConversation,
     deleteQuestion,
     addMaterial,
     addLesson,

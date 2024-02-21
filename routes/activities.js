@@ -24,6 +24,7 @@ router.put('/:id/remove', activitiesController.deleteConversation);
 router.put('/:id/update-subject',levelController.uploadImage, levelController.updateSubject);
 router.put('/:id/update-activity',activitiesController.uploadImage, activitiesController.updateActivity);
 router.put('/:id/update-lesson',activitiesController.uploadImage, activitiesController.updateLesson);
+router.put('/:id/update-conversation',activitiesController.audio, activitiesController.updateConversation);
 router.delete('/:id/remove-subject', levelController.deleteSubject);
 router.delete('/:id/remove-activity', activitiesController.deleteActivity);
 router.delete('/:id/remove-game', activitiesController.deleteLessonGame);
