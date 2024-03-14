@@ -12,7 +12,15 @@ var classRouter = require('./routes/class');
 var levelRouter = require('./routes/level');
 var activitiesRouter = require('./routes/activities')
 var conversationRouter = require('./routes/conversation')
+var studentLevel = require("./routes/assignLevel")
+var averageHomework = require("./routes/averageHomework")
+var studentHomework = require("./routes/studentHomework")
+var studentGoals = require("./routes/studentGoals")
+var classDescription = require("./routes/classDescription")
+var reminder = require("./routes/reminder")
+
 const notesRoutes = require('./controllers/NoteController');
+
 
 
 
@@ -46,6 +54,13 @@ app.use('/api/tracking', classRouter);
 app.use('/api/conversation-item', conversationRouter);
 app.use('/api/notes/', notesRoutes);
 app.use('/api/homework', homeworkRouter);
+app.use('/api/student', studentLevel);
+app.use('/api/average-homework', averageHomework);
+app.use('/api/student-homework', studentHomework);
+app.use('/api/student-goals', studentGoals);
+app.use('/api/class-description', classDescription);
+app.use('/api/reminder', reminder);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

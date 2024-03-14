@@ -1,3 +1,8 @@
+/* The code `router.post('/register-teacher',UserController.uploadImage,
+UserController.registerTeacher);` is defining a POST route for registering a new teacher. When a
+POST request is made to the '/register-teacher' endpoint, it will first execute the `uploadImage`
+middleware function and then call the `registerTeacher` function from the `UserController`. This
+route is used to handle the registration process for a new teacher in the application. */
 
 const mongoose = require('mongoose');
 
