@@ -37,6 +37,12 @@ const studentSchema = new mongoose.Schema({
     profileImage: {
         type: String
     },
+    country: {
+        type: String
+    },
+    classLink: {
+        type: String
+    },
     classes: [{
         year: {
             type: String,

@@ -32,22 +32,22 @@ exports.assignClassDescription = async (req, res) => {
             const checkMonth = level.classes.filter(data => data.month === month && data.year === year)
             if (checkMonth.length > 0) {
                 // update the month and year data
-                let classData = checkMonth[0].class.find(item => item.date === date && item.topic === topic)
-                if (classData) {
-                    classData.date = date || classData.date;
-                    classData.topic = topic || classData.topic;
-                    classData.dueDate = dueDate || classData.dueDate;
-                    classData.isDone = isDone || classData.isDone;
-                    classData.isCancel = isCancel || classData.isCancel;
-                } else {
-                    checkMonth[0].class.push({
-                        date,
-                        topic,
-                        dueDate,
-                        isDone,
-                        isCancel
-                    })
-                }
+                // let classData = checkMonth[0].class.find(item => item.date === date && item.topic === topic)
+                // if (classData) {
+                //     classData.date = date || classData.date;
+                //     classData.topic = topic || classData.topic;
+                //     classData.dueDate = dueDate || classData.dueDate;
+                //     classData.isDone = isDone || classData.isDone;
+                //     classData.isCancel = isCancel || classData.isCancel;
+                // } else {
+                checkMonth[0].class.push({
+                    date,
+                    topic,
+                    dueDate,
+                    isDone,
+                    isCancel
+                })
+                // }
                 await ClassDescription.updateOne({
                     student
                 }, {

@@ -20,7 +20,7 @@ router.put('/status/:id', UserController.updateStatus);
 router.post('/:id/get-levels', UserController.getStudentLevels);
 router.get('/all', UserController.getStudentDetails);
 // Route to get student by id
-router.get('/:email', UserController.getStudentById);
+router.get('/get-student/:id', UserController.getStudentById);
 // Route to update a student
 router.put('/:email', UserController.updateStudentDetails);
 // Route to delete a student

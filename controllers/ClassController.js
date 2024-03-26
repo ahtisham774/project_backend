@@ -4,6 +4,43 @@ const Class = require("../models/Class")
 const ClassManagement = require("../models/ClassManagement")
 const Student = require("../models/Student")
 
+
+
+const createClassLink = async (req, res) => {
+    try {
+        const student = req.params.id
+        const { link } = req.body
+        const level = await Student.findById(student)
+        if (!level) {
+            return res.status(404).json({ message: "Student Not found" })
+        } else {
+            level.classLink = link
+            await level.save()
+            return res.status(200).json({ message: "Link Assigned" })
+        }
+    }
+    catch (err) {
+        return res.status(500).json({ message: err.message })
+    }
+}
+
+const getClassLink = async (req, res) => {
+    try {
+        const student = req.params.id
+        const level = await Student.findById(student)
+        if (!level) {
+            return res.status(404).json({ message: "Student Not found" })
+        } else {
+            return res.status(200).json(level.classLink)
+        }
+    }
+    catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+}
+
+
+
 const createClass = async (req, res) => {
     const year = req.body.year;
     const studentId = req.params.id;
@@ -281,6 +318,8 @@ module.exports = {
     getYears,
     getClassItems,
     getMonthlyClassesByYear,
+    createClassLink,
+    getClassLink,
     getMonthlyClassByYearAndMonth,
 
 }

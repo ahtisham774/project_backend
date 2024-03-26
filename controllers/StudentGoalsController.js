@@ -4,7 +4,7 @@ const StudentGoals = require('../models/StudentGoals');
 
 exports.assignGoals = async (req, res) => {
     try {
-        const { month, year, title, isDone } = req.body
+        const { title, isDone } = req.body
         const student = req.params.id
         const level = await StudentGoals.findOne({ student })
         if (!level) {
@@ -12,8 +12,6 @@ exports.assignGoals = async (req, res) => {
                 student,
                 goals: [
                     {
-                        month,
-                        year,
                         title,
                         isDone,
                     }
@@ -22,40 +20,15 @@ exports.assignGoals = async (req, res) => {
             await newLevel.save()
             return res.status(200).json({ message: "Goals Assigned" })
         } else {
-            // check if month and year already exists
-            const checkMonth = level.goals.filter(data => data.month === month && data.year === year)
-            if (checkMonth.length > 0) {
-                // update the month and year data
-                let goal = checkMonth[0].goal.find(item => item.title === title)
-                if (goal) {
-                    goal.title = title || goal.title;
-                    goal.isDone = isDone || goal.isDone;
-                } else {
-                    checkMonth[0].goal.push({
-                        title,
-                        isDone,
-                    })
+            level.goals.push(
+                {
+                    title,
+                    isDone
                 }
-                await StudentGoals.updateOne({
-                    student
-                }, {
-                    goals: level.goals
-                })
-                return res.status(201).json({ message: "Goals Updated" })
-            } else {
-                level.goals.push({
-                    month,
-                    year,
-                    goal:[
-                        {
-                            title,
-                            isDone
-                        }
-                    ]
-                })
-                await level.save()
-                return res.status(200).json({ message: "Goals Assigned" })
-            }
+            )
+            await level.save()
+            return res.status(200).json({ message: "Goals Assigned" })
+
         }
     } catch (err) {
         return res.status(500).json({ message: err.message })
@@ -81,18 +54,13 @@ exports.deleteGoal = async (req, res) => {
     try {
         const student = req.params.id
         const index = req.body.goal;
-        const level = await StudentGoals.findOneAndUpdate({ student }, {
-            $pull: {
-                goals: {
-                    _id: index
-                }
-            }
-        })
+        const level = await StudentGoals.updateOne({ student }, { $pull: { goals: { _id: index } } })
+       
         if (!level) {
+
             return res.status(404).json({ message: "Student Not found" })
-        } else {
-            return res.status(200).json({ message: "Goal Deleted" })
         }
+        return res.status(200).json({ message: "Goal Deleted" })
     } catch (err) {
         return res.status(500).json({ message: err.message })
     }
@@ -101,12 +69,13 @@ exports.deleteGoal = async (req, res) => {
 exports.updateGoal = async (req, res) => {
     try {
         const student = req.params.id
-        const index = req.body.goal;
-        const level = await StudentGoals.findOne({ student })
+        const id = req.body.goal;
+        const level = await StudentGoals.findOne({ student})
         if (!level) {
             return res.status(404).json({ message: "Student Not found" })
         } else {
-            level.goals.id(index).isDone = !level.goals.id(index).isDone;
+            const goal = level.goals.id(id)
+            goal.isDone = !goal.isDone
             await level.save()
             return res.status(200).json({ message: "Goal Updated" })
         }

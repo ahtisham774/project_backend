@@ -179,8 +179,11 @@ exports.getStudentDetails = async (req, res) => {
 exports.getStudentById = async (req, res) => {
     try {
         // Find student by id
-        const student = await Student.findOne({ email: req.params.email }).select('-password -dateCreated -dateUpdated');
-        res.status(200).json(student);
+        const student = await Student.findById(req.params.id).select('firstName lastName email password country');
+        const newStudent = {
+            ...student._doc,
+        }
+        return res.status(200).json(newStudent);
     }
     catch (error) {
         console.error(error);
@@ -280,6 +283,9 @@ exports.registerTeacher = async (req, res) => {
         res.status(400).json({ message: 'Invalid credentials' });
     }
 }
+
+
+
 
 
 // Handle image upload
