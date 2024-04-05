@@ -8,6 +8,7 @@ router.post('/register',UserController.uploadImage, UserController.registerStude
 
 
 router.get('/students',UserController.getStudents);
+router.get('/student/:id',UserController.getStudentName);
 
 // Route for logging in a student
 router.post('/login', UserController.loginStudent);
@@ -22,7 +23,7 @@ router.get('/all', UserController.getStudentDetails);
 // Route to get student by id
 router.get('/get-student/:id', UserController.getStudentById);
 // Route to update a student
-router.put('/:email', UserController.updateStudentDetails);
+router.put('/:id', UserController.updateStudentDetails);
 // Route to delete a student
 router.delete('/:email', UserController.deleteStudent);
 

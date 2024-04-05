@@ -152,6 +152,7 @@ exports.loginStudent = async (req, res) => {
         }
         // Validate the password
         const validPassword = await bcrypt.compare(req.body.password, user.password);
+        console.log(validPassword,user)
         if (!validPassword) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
@@ -179,7 +180,7 @@ exports.getStudentDetails = async (req, res) => {
 exports.getStudentById = async (req, res) => {
     try {
         // Find student by id
-        const student = await Student.findById(req.params.id).select('firstName lastName email password country');
+        const student = await Student.findById(req.params.id).select('firstName lastName email country profileImage');
         const newStudent = {
             ...student._doc,
         }
@@ -193,19 +194,15 @@ exports.getStudentById = async (req, res) => {
 // Update student details
 exports.updateStudentDetails = async (req, res) => {
     try {
-        // Validation
-        if (req.body.rollNo) {
-            return res.status(400).json({ message: 'Roll No cannot be updated' });
-        }
-        if (req.body.email) {
-            return res.status(400).json({ message: 'Email cannot be updated' });
-        }
-        if (req.body.password) {
-            return res.status(400).json({ message: 'Password cannot be updated' });
-        }
         // Find and update the student
-        let student = await Student.findByIdAndUpdate(req.student.id, req.body, { new: true })
-        res.status(200).json(student);
+        const updatedStudent = {
+            ...req.body,
+            password: req.body.password ? await bcrypt.hash(req.body.password, await bcrypt.genSalt(10)) : undefined,
+        }
+        let student = await Student.findByIdAndUpdate(req.params.id, updatedStudent, { new: true }).select('firstName, LastName, email, country, profileImage');
+        if(student){
+
+        }
     }
     catch (error) {
         console.error(error);
@@ -277,6 +274,24 @@ exports.registerTeacher = async (req, res) => {
         });
         const savedTeacher = await newTeacher.save();
         res.status(200).json({ email: savedTeacher.email });
+    }
+    catch (error) {
+        console.log(error)
+        res.status(400).json({ message: 'Invalid credentials' });
+    }
+}
+
+
+exports.getStudentName = async (req, res) => {
+    try {
+        const student = await Student.findById(req.params.id).select('firstName lastName');
+        if(student){
+
+            res.status(200).json(student);
+        }
+        else{
+            res.status(404).json({ message: 'Student not found' });
+        }
     }
     catch (error) {
         console.log(error)
