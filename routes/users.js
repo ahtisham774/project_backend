@@ -20,6 +20,7 @@ router.put('/assign-level', UserController.assignLevel);
 router.put('/status/:id', UserController.updateStatus);
 router.post('/:id/get-levels', UserController.getStudentLevels);
 router.get('/all', UserController.getStudentDetails);
+router.get('/:id', UserController.getStudentByLevel);
 // Route to get student by id
 router.get('/get-student/:id', UserController.getStudentById);
 // Route to update a student

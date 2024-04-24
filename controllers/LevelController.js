@@ -21,7 +21,7 @@ const upload = multer({ storage: storage });
 const getLevelById = async (req, res, next) => {
     try {
 
-        let level = await Level.findOne({ _id: req.params.id }).select("subjects")
+        let level = await Level.findOne({ _id: req.params.id }).select("level subjects")
             .populate({
                 path: 'subjects',
                 select: '-activities', // Exclude the 'activities' field

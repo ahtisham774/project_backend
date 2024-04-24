@@ -40,7 +40,7 @@ const getAllActivities = async (req, res, next) => {
     console.log(req.params.id)
     try {
 
-        let subject = await Subject.findOne({ _id: req.params.id }).select("activities")
+        let subject = await Subject.findOne({ _id: req.params.id }).select("subject activities")
             .populate({
                 path: 'activities',
                 select: "title coverImage type description", // Exclude the 'activities' field
@@ -65,7 +65,7 @@ const getActivitiesContentById = async (req, res, next) => {
         let activity;
         if (required === 'lessons') {
             //get get lesson from activity and populate it and select title description and coverImage from lesson
-            activity = await Activity.findById(id).select("type lessons")
+            activity = await Activity.findById(id).select("title type lessons")
                 .populate({
                     path: 'lessons',
                     select: "title description  coverImage", // Exclude the 'activities' field

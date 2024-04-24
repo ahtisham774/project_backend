@@ -20,6 +20,7 @@ var classDescription = require("./routes/classDescription")
 var reminder = require("./routes/reminder")
 
 const notesRoutes = require('./controllers/NoteController');
+const paymentRoutes = require('./routes/studentPayment');
 
 
 
@@ -60,6 +61,7 @@ app.use('/api/student-homework', studentHomework);
 app.use('/api/student-goals', studentGoals);
 app.use('/api/class-description', classDescription);
 app.use('/api/reminder', reminder);
+app.use('/api/payment', paymentRoutes);
 
 
 // catch 404 and forward to error handler

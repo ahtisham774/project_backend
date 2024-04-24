@@ -91,6 +91,18 @@ exports.getStudentLevels = async (req, res) => {
     }
 }
 
+exports.getStudentByLevel = async (req, res) => {
+    try {
+        const students = await Student.find({ levels: req.params.id }).select('firstName lastName profileImage');
+        res.status(200).json(students);
+    }
+    catch (error) {
+        console.log(error)
+        res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+}
+
 
 // Register a new student
 exports.registerStudent = async (req, res) => {
